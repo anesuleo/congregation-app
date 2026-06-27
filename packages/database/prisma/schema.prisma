@@ -1,0 +1,191 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model Congregation {
+  id         String   @id @default(uuid())
+  name       String
+  code       String   @unique
+  city       String
+  country    String   @default("Ireland")
+  created_at DateTime @default(now())
+
+  publishers            Publisher[]
+  assignments           Assignment[]
+  territories           Territory[]
+  duties                Duty[]
+  events                CongregationEvent[]
+  announcements         Announcement[]
+  away_periods          AwayPeriod[]
+  literature_requests   LiteratureRequest[]
+  field_service_reports FieldServiceReport[]
+  delegates             Delegate[]
+
+  @@map("congregations")
+}
+
+model Publisher {
+  id               String   @id @default(uuid())
+  congregation_id  String
+  full_name        String
+  email            String
+  role             String   @default("publisher")
+  is_active        Boolean  @default(true)
+  expo_push_token  String?
+  created_at       DateTime @default(now())
+
+  congregation          Congregation         @relation(fields: [congregation_id], references: [id])
+  assignments           Assignment[]
+  duties                Duty[]
+  field_service_reports FieldServiceReport[]
+  away_periods          AwayPeriod[]
+  literature_requests   LiteratureRequest[]
+  territories_assigned  Territory[]
+  delegating_to         Delegate[]           @relation("DelegatingPublisher")
+  delegated_by          Delegate[]           @relation("DelegatePublisher")
+
+  @@map("publishers")
+}
+
+model Assignment {
+  id              String   @id @default(uuid())
+  congregation_id String
+  publisher_id    String
+  type            String
+  part            String
+  meeting_date    DateTime
+  assistant_id    String?
+  created_at      DateTime @default(now())
+
+  congregation Congregation @relation(fields: [congregation_id], references: [id])
+  publisher    Publisher    @relation(fields: [publisher_id], references: [id])
+
+  @@map("assignments")
+}
+
+model FieldServiceReport {
+  id              String   @id @default(uuid())
+  congregation_id String
+  publisher_id    String
+  month           Int
+  year            Int
+  hours           Float?
+  placements      Int?
+  videos          Int?
+  return_visits   Int?
+  bible_studies   Int?
+  submitted_at    DateTime @default(now())
+
+  congregation Congregation @relation(fields: [congregation_id], references: [id])
+  publisher    Publisher    @relation(fields: [publisher_id], references: [id])
+
+  @@unique([publisher_id, month, year])
+  @@map("field_service_reports")
+}
+
+model Territory {
+  id                   String    @id @default(uuid())
+  congregation_id      String
+  name                 String
+  code                 String
+  area                 String
+  notes                String?
+  boundary_coordinates Json
+  assigned_to          String?
+  date_assigned        DateTime?
+  date_due             DateTime?
+  returned_at          DateTime?
+
+  congregation Congregation @relation(fields: [congregation_id], references: [id])
+  publisher    Publisher?   @relation(fields: [assigned_to], references: [id])
+
+  @@map("territories")
+}
+
+model Duty {
+  id              String   @id @default(uuid())
+  congregation_id String
+  publisher_id    String
+  type            String
+  date            DateTime
+
+  congregation Congregation @relation(fields: [congregation_id], references: [id])
+  publisher    Publisher    @relation(fields: [publisher_id], references: [id])
+
+  @@map("duties")
+}
+
+model CongregationEvent {
+  id              String   @id @default(uuid())
+  congregation_id String
+  title           String
+  description     String?
+  event_date      DateTime
+  type            String
+
+  congregation Congregation @relation(fields: [congregation_id], references: [id])
+
+  @@map("congregation_events")
+}
+
+model Announcement {
+  id              String   @id @default(uuid())
+  congregation_id String
+  title           String
+  body            String
+  document_url    String?
+  created_at      DateTime @default(now())
+
+  congregation Congregation @relation(fields: [congregation_id], references: [id])
+
+  @@map("announcements")
+}
+
+model AwayPeriod {
+  id              String   @id @default(uuid())
+  congregation_id String
+  publisher_id    String
+  from_date       DateTime
+  to_date         DateTime
+  notes           String?
+  created_at      DateTime @default(now())
+
+  congregation Congregation @relation(fields: [congregation_id], references: [id])
+  publisher    Publisher    @relation(fields: [publisher_id], references: [id])
+
+  @@map("away_periods")
+}
+
+model LiteratureRequest {
+  id              String   @id @default(uuid())
+  congregation_id String
+  publisher_id    String
+  item            String
+  quantity        Int      @default(1)
+  fulfilled       Boolean  @default(false)
+  created_at      DateTime @default(now())
+
+  congregation Congregation @relation(fields: [congregation_id], references: [id])
+  publisher    Publisher    @relation(fields: [publisher_id], references: [id])
+
+  @@map("literature_requests")
+}
+
+model Delegate {
+  id                    String   @id @default(uuid())
+  congregation_id       String
+  publisher_id          String
+  delegate_publisher_id String
+  created_at            DateTime @default(now())
+
+  congregation       Congregation @relation(fields: [congregation_id], references: [id])
+  publisher          Publisher    @relation("DelegatingPublisher", fields: [publisher_id], references: [id])
+  delegate_publisher Publisher    @relation("DelegatePublisher", fields: [delegate_publisher_id], references: [id])
+
+  @@map("delegates")
+}

@@ -6,7 +6,7 @@
     "db:push": "prisma db push",
     "db:generate": "prisma generate",
     "db:studio": "prisma studio",
-    "typecheck": "tsc --noEmit"
+    "typecheck": "echo \"(database) no TypeScript sources to check\""
   },
   "dependencies": {
     "@prisma/client": "^5.14.0"

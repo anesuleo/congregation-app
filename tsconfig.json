@@ -5,7 +5,9 @@
     "skipLibCheck": true,
     "forceConsistentCasingInFileNames": true,
     "resolveJsonModule": true,
-    "moduleResolution": "node"
+    "module": "ESNext",
+    "moduleResolution": "bundler",
+    "jsx": "react-jsx"
   },
-  "exclude": ["node_modules"]
+  "exclude": ["node_modules", "**/dist", "**/build", "**/.expo"]
 }

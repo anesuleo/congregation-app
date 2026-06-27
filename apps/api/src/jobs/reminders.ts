@@ -25,7 +25,7 @@ export function startReminderJobs() {
     if (messages.length > 0) {
       const chunks = expo.chunkPushNotifications(messages);
       for (const chunk of chunks) await expo.sendPushNotificationsAsync(chunk);
-      console.log(`Sent ${len(messages)} reminder(s)`);
+      console.log(`Sent ${messages.length} reminder(s)`);
     }
   });
 }
